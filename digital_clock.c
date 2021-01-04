@@ -10,30 +10,26 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define F_CPU 1000000UL
-
 #define KEY1_UP (PIND & (1 << PD2))
 #define KEY2_UP (PIND & (1 << PD3))
 #define KEY3_UP (PINB & (1 << PB6))
 #define KEY4_UP (PINB & (1 << PB7))
 
-#define timer0_start 196
-#define timer2_start 6
+#define timer_start 196
 
 uint8_t modeFlag = 1;
 uint8_t ableToEdit = 1;
 volatile uint8_t seconds = 0;
 volatile uint8_t minutes = 0;
 volatile uint8_t hours = 0;
+volatile uint8_t key1_Status;
 char secondsBuffer[3];
 char minutesBuffer[3];
 char hoursBuffer[3];
-volatile uint8_t key1_Status;
-int real_time_sec;
 
 ISR(TIMER0_OVF_vect)
 {
-    TCNT0 = timer0_start;
+    TCNT0 = timer_start;
     static uint8_t lkey1 = 0;
     static uint8_t lkey2 = 0;
     static uint8_t lkey3 = 0;
@@ -71,8 +67,6 @@ ISR(TIMER0_OVF_vect)
             lkey2 = 1;
             if(ableToEdit == 1)
             {
-				const int clicked_time = real_time_sec;
-				
                 switch(modeFlag)
                 {
                 case 1:
@@ -96,33 +90,6 @@ ISR(TIMER0_OVF_vect)
                         seconds == 0;
                     }
                     break;
-                }
-                while(!KEY2_UP && (real_time_sec - clicked_time) >= 3)
-                {
-                    switch(modeFlag)
-                    {
-                    case 1:
-                        hours ++;
-                        if(hours >= 24)
-                        {
-                            hours = 0;
-                        }
-                        break;
-                    case 2:
-                        minutes ++;
-                        if(minutes >= 60)
-                        {
-                            minutes = 0;
-                        }
-                        break;
-                    case 3:
-                        seconds ++;
-                        if(seconds >= 60)
-                        {
-                            seconds == 0;
-                        }
-                        break;
-                    }
                 }
             }
         }
@@ -176,7 +143,6 @@ ISR(TIMER0_OVF_vect)
 
 ISR(TIMER1_COMPA_vect)
 {
-    real_time_sec++;
     seconds++;
     if(seconds >= 60)
     {
@@ -189,7 +155,7 @@ ISR(TIMER1_COMPA_vect)
             hours ++;
             if(hours >= 24)
             {
-                hours = minutes = seconds = 0;
+                hours, minutes, seconds = 0;
             }
         }
     }
@@ -202,7 +168,6 @@ int main(void)
     DDRD &= ~(1 << PD3);
     DDRB &= ~(1 << PB6);
     DDRB &= ~(1 << PB7);
-    DDRB |= (1 << PB0);
 
     PORTD |= (1 << PD2);
     PORTD |= (1 << PD3);
@@ -219,11 +184,10 @@ int main(void)
     OCR1A = 977;
     TIMSK |= (1 << OCIE1A);
 
-    TCNT0 = timer0_start;
+    TCNT0 = timer_start;
     TIMSK |= (1 << TOIE0);
-    TCCR0 |= (1 << CS02) | (1 << CS00);
-
     sei();
+    TCCR0 |= (1 << CS02) | (1 << CS00);
 
     while(1)
     {
@@ -263,7 +227,7 @@ int main(void)
         }
         else if(ableToEdit == 1 && modeFlag == 3)
         {
-            LCD_GoTo(4, 0);
+            LCD_GoTo(5, 0);
             LCD_WriteText("Sekundy");
         }
         else
