@@ -17,8 +17,8 @@
 
 #define timer_start 196
 
-uint8_t modeFlag = 1;
-uint8_t ableToEdit = 1;
+volatile uint8_t modeFlag = 1;
+volatile uint8_t ableToEdit = 1;
 volatile uint8_t seconds = 0;
 volatile uint8_t minutes = 0;
 volatile uint8_t hours = 0;
