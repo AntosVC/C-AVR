@@ -17,6 +17,8 @@
 
 #define timer_start 196
 
+#define F_CPU 1000000UL
+
 volatile uint8_t modeFlag = 1;
 volatile uint8_t ableToEdit = 1;
 volatile uint8_t seconds = 0;
