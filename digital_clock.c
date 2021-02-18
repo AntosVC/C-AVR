@@ -1,5 +1,6 @@
 /*
      Digital clock
+     Atmega8A
 */
 
 #include <avr/io.h>
